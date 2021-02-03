@@ -40,7 +40,7 @@ private:
     void   PrintPage(WiFiClient* client, String const& page);
     String GetDirList();
 
-    int _resetPin = 0;
+    int resetPin_ = 0;
 };
 
 #endif  // WEBSERV_H

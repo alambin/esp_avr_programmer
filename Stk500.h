@@ -25,9 +25,9 @@ private:
     int  waitForSerialData(int dataCount, int timeout);
     int  getFlashPageCount(byte flashData[][131]);
 
-    int     _resetPin;
-    Stream* _serial;
-    Print*  _log;
+    int     resetPin_;
+    Stream* serial_;
+    Print*  log_;
 };
 
 #endif  // STK500_H

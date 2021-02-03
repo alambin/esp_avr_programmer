@@ -2,8 +2,8 @@
 
 
 WebServ::WebServ(int resetPin)
+  : resetPin_(resetPin)
 {
-    _resetPin = resetPin;
 }
 
 void
@@ -61,7 +61,7 @@ WebServ::WSCmdFlash(WiFiClient* client, String const& filename)
     Serial.flush();
     while (Serial.read() != -1)
         ;
-    Stk500 stk500(&Serial, _resetPin);
+    Stk500 stk500(&Serial, resetPin_);
 
     SPIFFS.begin();
 
