@@ -10,7 +10,7 @@ void
 WebServ::WSCmdIndex(WiFiClient* client)
 {
     SPIFFS.begin();
-    File file = SPIFFS.open("/index.htm.gz", "r");
+    File file = SPIFFS.open(F("/index.htm.gz"), "r");
 
     if (file) {
         int  fs = file.size();
@@ -100,7 +100,7 @@ WebServ::WSCmdUpload(WiFiClient* client, String const& filename)
         if (client->available()) {
             String line = client->readStringUntil('\n');
 
-            if (line.startsWith("Content-Length")) {
+            if (line.startsWith(F("Content-Length"))) {
                 contentLen = line.substring(16, (line.length() - 1)).toInt();
             }
 
@@ -120,7 +120,7 @@ WebServ::WSCmdUpload(WiFiClient* client, String const& filename)
                 SPIFFS.end();
 
                 delay(10);
-                String html = HttpSimplePage("DONE");
+                String html = HttpSimplePage(F("DONE"));
                 client->println(html);
                 delay(10);
 
@@ -133,16 +133,16 @@ WebServ::WSCmdUpload(WiFiClient* client, String const& filename)
 WebServ::HttpCommandType
 WebServ::GetCommand(String const& str)
 {
-    if (str.startsWith("GET /files")) {
+    if (str.startsWith(F("GET /files"))) {
         return HttpCommandType::List;
     }
-    else if (str.startsWith("GET /delete")) {
+    else if (str.startsWith(F("GET /delete"))) {
         return HttpCommandType::Delete;
     }
-    else if (str.startsWith("GET /flash")) {
+    else if (str.startsWith(F("GET /flash"))) {
         return HttpCommandType::Flash;
     }
-    else if (str.startsWith("POST /upload")) {
+    else if (str.startsWith(F("POST /upload"))) {
         return HttpCommandType::Upload;
     }
     else {

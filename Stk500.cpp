@@ -16,22 +16,22 @@ Stk500::setupDevice()
     resetMCU();
     int s = getSync();
     if (log_)
-        log_->printf("avrflash: sync=d%d/0x%x\n", s, s);
+        log_->printf(F("avrflash: sync=d%d/0x%x\n"), s, s);
     if (!s)
         return false;
     s = setProgParams();
     if (log_)
-        log_->printf("avrflash: setparam=d%d/0x%x\n", s, s);
+        log_->printf(F("avrflash: setparam=d%d/0x%x\n"), s, s);
     if (!s)
         return false;
     s = setExtProgParams();
     if (log_)
-        log_->printf("avrflash: setext=d%d/0x%x\n", s, s);
+        log_->printf(F("avrflash: setext=d%d/0x%x\n"), s, s);
     if (!s)
         return false;
     s = enterProgMode();
     if (log_)
-        log_->printf("avrflash: progmode=d%d/0x%x\n", s, s);
+        log_->printf(F("avrflash: progmode=d%d/0x%x\n"), s, s);
     if (!s)
         return false;
     return true;
@@ -43,7 +43,7 @@ Stk500::flashPage(byte* address, byte* data)
     byte header[] = {0x64, 0x00, 0x80, 0x46};
     int  s        = loadAddress(address[1], address[0]);
     if (log_)
-        log_->printf("avrflash: loadAddr(%d,%d)=%d\n", address[1], address[0], s);
+        log_->printf(F("avrflash: loadAddr(%d,%d)=%d\n"), address[1], address[0], s);
 
     serial_->write(header, 4);
     for (int i = 0; i < 128; i++)
@@ -52,13 +52,13 @@ Stk500::flashPage(byte* address, byte* data)
 
     s = waitForSerialData(2, 1000);
     if (s == 0 && log_) {
-        log_->printf("avrflash: flashpage: ack: error\n");
+        log_->printf(F("avrflash: flashpage: ack: error\n");
         return false;
     }
     s     = serial_->read();
     int t = serial_->read();
     if (log_)
-        log_->printf("avrflash: flashpage: ack: d%d/d%d - 0x%x/0x%x\n", s, t, s, t);
+        log_->printf(F("avrflash: flashpage: ack: d%d/d%d - 0x%x/0x%x\n"), s, t, s, t);
 
     return true;
 }
