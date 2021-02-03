@@ -11,27 +11,33 @@
 class WebServ
 {
 public:
-    const int httpCmdIndex  = 0;
-    const int httpCmdFlash  = 1;
-    const int httpCmdUpload = 2;
-    const int httpCmdDelete = 3;
-    const int httpCmdList   = 4;
+    enum class HttpCommandType : uint8_t
+    {
+        Index = 0,
+        Flash,
+        Upload,
+        Delete,
+        List
+    };
 
     WebServ(int i);
-    int    GetCommand(String s);
-    String GetUrlParam(String s);
-    String HttpSimplePage(String s);
-    String HttpRawText(String s);
-    void   WSCmdIndex(WiFiClient* c);
-    void   WSCmdList(WiFiClient* c);
-    void   WSCmdDelete(WiFiClient* c, String s);
-    void   WSCmdFlash(WiFiClient* c, String s);
-    void   WSCmdUpload(WiFiClient* c, String s);
+    void ExecuteCommand(WiFiClient* client);
 
 private:
-    String DefaultHeader(bool b);
+    HttpCommandType GetCommand(String const& str);
+    String          GetUrlParam(String const& str);
+    String          HttpSimplePage(String const& text);
+    String          HttpRawText(String const& text);
+
+    void WSCmdIndex(WiFiClient* client);
+    void WSCmdFlash(WiFiClient* client, String const& filename);
+    void WSCmdUpload(WiFiClient* client, String const& filename);
+    void WSCmdDelete(WiFiClient* client, String const& filename);
+    void WSCmdList(WiFiClient* client);
+
+    String DefaultHeader(bool is_zipped);
     String DefaultFooter();
-    void   PrintPage(WiFiClient* c, String s);
+    void   PrintPage(WiFiClient* client, String const& page);
     String GetDirList();
 
     int _resetPin = 0;

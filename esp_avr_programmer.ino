@@ -31,28 +31,7 @@ loop()
     WiFiClient client = server.available();
 
     if (client) {
-        String line     = client.readStringUntil('\r');
-        int    httpCmd  = webServ.GetCommand(line);
-        String urlParam = webServ.GetUrlParam(line);
-
-        if (httpCmd == webServ.httpCmdIndex) {
-            webServ.WSCmdIndex(&client);
-        }
-        else if (httpCmd == webServ.httpCmdDelete) {
-            webServ.WSCmdDelete(&client, urlParam);
-        }
-        else if (httpCmd == webServ.httpCmdFlash) {
-            webServ.WSCmdFlash(&client, urlParam);
-        }
-        else if (httpCmd == webServ.httpCmdList) {
-            webServ.WSCmdList(&client);
-        }
-        else if (httpCmd == webServ.httpCmdUpload) {
-            webServ.WSCmdUpload(&client, urlParam);
-        }
-        else {
-            webServ.WSCmdIndex(&client);
-        }
+        webServ.ExecuteCommand(&client);
 
         client.flush();
         while (client.available())

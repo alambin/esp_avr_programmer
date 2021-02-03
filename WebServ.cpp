@@ -43,7 +43,7 @@ WebServ::WSCmdList(WiFiClient* client)
 }
 
 void
-WebServ::WSCmdDelete(WiFiClient* client, String filename)
+WebServ::WSCmdDelete(WiFiClient* client, String const& filename)
 {
     SPIFFS.begin();
     SPIFFS.remove(filename);
@@ -54,7 +54,7 @@ WebServ::WSCmdDelete(WiFiClient* client, String filename)
 }
 
 void
-WebServ::WSCmdFlash(WiFiClient* client, String filename)
+WebServ::WSCmdFlash(WiFiClient* client, String const& filename)
 {
     Serial.begin(57600);
     // Serial.swap();
@@ -92,7 +92,7 @@ WebServ::WSCmdFlash(WiFiClient* client, String filename)
 
 
 void
-WebServ::WSCmdUpload(WiFiClient* client, String filename)
+WebServ::WSCmdUpload(WiFiClient* client, String const& filename)
 {
     int contentLen = 0;
 
@@ -130,44 +130,68 @@ WebServ::WSCmdUpload(WiFiClient* client, String filename)
     }
 }
 
-int
-WebServ::GetCommand(String s)
+WebServ::HttpCommandType
+WebServ::GetCommand(String const& str)
 {
-    if (s.startsWith("GET /files")) {
-        return httpCmdList;
+    if (str.startsWith("GET /files")) {
+        return HttpCommandType::List;
     }
-    else if (s.startsWith("GET /delete")) {
-        return httpCmdDelete;
+    else if (str.startsWith("GET /delete")) {
+        return HttpCommandType::Delete;
     }
-    else if (s.startsWith("GET /flash")) {
-        return httpCmdFlash;
+    else if (str.startsWith("GET /flash")) {
+        return HttpCommandType::Flash;
     }
-    else if (s.startsWith("GET /delete")) {
-        return httpCmdDelete;
-    }
-    else if (s.startsWith("POST /upload")) {
-        return httpCmdUpload;
+    else if (str.startsWith("POST /upload")) {
+        return HttpCommandType::Upload;
     }
     else {
-        return httpCmdIndex;
+        return WebServ::HttpCommandType::Index;
     }
 }
 
 String
-WebServ::GetUrlParam(String s)
+WebServ::GetUrlParam(String const& str)
 {
-    String param = "";
-    if (s.indexOf("&") > -1) {
-        int pStart = s.indexOf("&") + 1;
-        int pEnd   = s.indexOf(" ", pStart);
-        param      = s.substring(pStart, pEnd);
+    String result = "";
+    if (str.indexOf("&") > -1) {
+        int pStart = str.indexOf("&") + 1;
+        int pEnd   = str.indexOf(" ", pStart);
+        result     = str.substring(pStart, pEnd);
     }
 
-    return param;
+    return result;
+}
+
+void
+WebServ::ExecuteCommand(WiFiClient* client)
+{
+    String line{client->readStringUntil('\r')};
+    auto   command    = GetCommand(line);
+    auto   parameters = GetUrlParam(line);
+
+    switch (command) {
+    case HttpCommandType::Flash:
+        WSCmdFlash(client, parameters);
+        break;
+    case HttpCommandType::Upload:
+        WSCmdUpload(client, parameters);
+        break;
+    case HttpCommandType::Delete:
+        WSCmdDelete(client, parameters);
+        break;
+    case HttpCommandType::List:
+        WSCmdList(client);
+        break;
+    default:
+    case HttpCommandType::Index:
+        WSCmdIndex(client);
+        break;
+    }
 }
 
 String
-WebServ::HttpSimplePage(String text)
+WebServ::HttpSimplePage(String const& text)
 {
     String html = DefaultHeader(false);
     html += "<!DOCTYPE HTML><html>" + text + "</html>";
@@ -177,7 +201,7 @@ WebServ::HttpSimplePage(String text)
 }
 
 String
-WebServ::HttpRawText(String text)
+WebServ::HttpRawText(String const& text)
 {
     String html = DefaultHeader(false);
     html += text;
@@ -188,9 +212,9 @@ WebServ::HttpRawText(String text)
 
 
 String
-WebServ::DefaultHeader(bool gzip)
+WebServ::DefaultHeader(bool is_zipped)
 {
-    if (gzip) {
+    if (is_zipped) {
         return String(F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Encoding: "
                         "gzip\r\nAccess-Control-Allow-Origin: *\r\nConnection: close\r\n\r\n"));
     }
@@ -205,7 +229,7 @@ WebServ::DefaultFooter()
 }
 
 void
-WebServ::PrintPage(WiFiClient* client, String page)
+WebServ::PrintPage(WiFiClient* client, String const& page)
 {
     while (client->connected()) {
         if (client->available()) {
